@@ -93,7 +93,7 @@ contract KipuBank {
 
         balance[msg.sender] += msg.value;//guarda el saldo depositado
 
-        ++numberOfDeposits; //incrementa la variable cada vez que se hace un depósito
+        _updateDepositCount(); //incrementa la variable cada vez que se hace un depósito
 
         emit Deposit(msg.sender, msg.value);
         
@@ -120,5 +120,9 @@ contract KipuBank {
 
     function getBankBalance() external view returns (uint256) {
         return address(this).balance;
+    }
+
+    function _updateDepositCount() private {
+        ++numberOfDeposits;
     }
 }
