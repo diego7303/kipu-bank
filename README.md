@@ -1,125 +1,135 @@
 
 # 🏦 KipuBank
 
-Contrato inteligente de Ethereum para la gestión de depósitos y retiros con límites, desarrollado con fines educativos.
+Ethereum smart contract for managing deposits and withdrawals with limits, developed for educational purposes.
 
 ---
 
-## 📜 Descripción
+## 📜 Description
 
-KipuBank permite a los usuarios:
+KipuBank allows users to:
 
-- Depositar ETH dentro de un límite global (`bankCap`).
-- Retirar parte de su saldo hasta un monto máximo por transacción (`maxWithdrawalPerTx`).
-- Llevar un registro de todas las transacciones (depósitos y retiros).
-- Emitir eventos que reflejan cada operación importante.
+- Deposit ETH within a global limit (`bankCap`).
+- Withdraw a portion of their balance up to a maximum per transaction (`maxWithdrawalPerTx`).
+- Keep track of all transactions (deposits and withdrawals).
+- Emit events reflecting each important operation.
 
-> ⚠️ Este contrato **no está auditado** y **no debe usarse en producción**.
-
----
-
-## 🚀 Características
-
-- Control de límite máximo de fondos (`bankCap`).
-- Límite por retiro individual.
-- Validaciones estrictas con errores personalizados.
-- Uso de `call` para transferencias seguras de ETH.
-- Compatible con Remix IDE y redes de prueba como Sepolia o Goerli.
+> ⚠️ This contract is **not audited** and **should not be used in production**.
 
 ---
 
-## 🧱 Variables públicas
+## 🚀 Features
 
-| Variable              | Tipo       | Descripción                                                   |
+- Global deposit limit control (`bankCap`).
+- Individual withdrawal limits.
+- Strict validations using custom errors.
+- Safe ETH transfers using `.call`.
+- Compatible with Remix IDE and testnets like Sepolia or Goerli.
+
+---
+
+## 🧱 Public Variables
+
+| Variable              | Type       | Description                                                   |
 |-----------------------|------------|---------------------------------------------------------------|
-| `bankCap`             | `uint256`  | Límite máximo total de ETH que puede mantener el contrato.   |
-| `maxWithdrawalPerTx`  | `uint256`  | Monto máximo que se puede retirar en una sola transacción.   |
-| `numberOfDeposits`    | `uint256`  | Cantidad total de depósitos realizados.                      |
-| `numberOfWithdrawals` | `uint256`  | Cantidad total de retiros realizados.                        |
-| `balance`             | `mapping`  | Saldo individual de cada usuario.                            |
+| `bankCap`             | `uint256`  | Maximum total ETH the contract can hold.                     |
+| `maxWithdrawalPerTx`  | `uint256`  | Maximum amount that can be withdrawn in a single transaction.|
+| `numberOfDeposits`    | `uint256`  | Total number of deposits made.                                |
+| `numberOfWithdrawals` | `uint256`  | Total number of withdrawals made.                             |
+| `balance`             | `mapping`  | Individual balance of each user.                              |
 
 ---
 
-## 🧾 Funciones principales
+## 🧾 Main Functions
 
 ### `constructor(uint256 _bankCap)`
-Inicializa el contrato con un límite máximo de ETH (`bankCap`).
+Initializes the contract with a maximum ETH limit (`bankCap`).
 
 ---
 
 ### `deposit() external payable`
-Permite a los usuarios depositar ETH.
+Allows users to deposit ETH.
 
-- Valida que el depósito sea mayor a 0.
-- Verifica que no se exceda el `bankCap`.
-- Registra el saldo del usuario y emite el evento `Deposit`.
+- Validates that the deposit is greater than 0.
+- Ensures the deposit does not exceed the `bankCap`.
+- Updates the user's vault balance and increments the deposit counter.
+- Emits the `Deposit` event.
 
 ---
 
 ### `claim(uint256 _amount) external`
-Permite a los usuarios retirar parte de su saldo.
+Allows users to withdraw a portion of their balance.
 
-- Usa el modifier `withdrawalWithinLimit` para validar el monto.
-- Verifica que:
-  - El monto sea mayor que 0.
-  - No exceda el saldo disponible del usuario.
-- Realiza la transferencia mediante `.call`.
-- Emite el evento `Withdrawal`.
+- Uses the `withdrawalWithinLimit` modifier to validate the amount.
+- Checks that:
+  - The amount is greater than 0.
+  - The user has sufficient balance.
+- Transfers ETH using `.call`.
+- Emits the `Withdrawal` event.
 
 ---
 
-## 📢 Eventos
+### `getBankBalance() external view`
+Returns the total ETH held in the contract.
 
-| Evento      | Parámetros                        | Descripción                       |
+---
+
+## 📢 Events
+
+| Event       | Parameters                        | Description                       |
 |-------------|-----------------------------------|-----------------------------------|
-| `Deposit`   | `address user`, `uint256 amount`  | Emitido al depositar ETH.        |
-| `Withdrawal`| `address user`, `uint256 amount`  | Emitido al retirar ETH.          |
+| `Deposit`   | `address user`, `uint256 amount`  | Emitted when ETH is deposited.    |
+| `Withdrawal`| `address user`, `uint256 amount`  | Emitted when ETH is withdrawn.    |
 
 ---
 
-## ❌ Errores personalizados
+## ❌ Custom Errors
 
-| Error                          | Cuándo ocurre                                                     |
-|--------------------------------|-------------------------------------------------------------------|
-| `AmountMustBeGreaterThanZero()` | Si el monto de depósito o retiro es igual a 0.                   |
-| `AmountExceedsBankCap()`        | Si el contrato superaría el `bankCap` con el nuevo depósito.     |
-| `InsufficientBalance()`         | Si el usuario intenta retirar más de lo que tiene.               |
-| `WithdrawalAmountExceedsLimit()`| Si el retiro excede el límite máximo por transacción.           |
-| `TransactionFailed()`           | Si la transferencia de ETH mediante `.call` falla.               |
+| Error                          | When it occurs                                                 |
+|--------------------------------|---------------------------------------------------------------|
+| `AmountMustBeGreaterThanZero()` | If deposit or withdrawal amount is zero.                     |
+| `AmountExceedsBankCap()`        | If the deposit exceeds the total `bankCap`.                  |
+| `InsufficientBalance()`         | If the user tries to withdraw more than their balance.       |
+| `WithdrawalAmountExceedsLimit()`| If the withdrawal exceeds the per-transaction limit.         |
+| `TransactionFailed()`           | If the ETH transfer using `.call` fails.                     |
 
 ---
 
 ## 🔐 Modifier
 
 ### `withdrawalWithinLimit(uint256 _amount)`
-Evita que un retiro supere el límite máximo por transacción (`maxWithdrawalPerTx`).
+Prevents a withdrawal from exceeding the maximum per-transaction limit (`maxWithdrawalPerTx`).
 
 ---
 
-## 🧪 Cómo probarlo en Remix
+## 🧪 How to Test in Remix
 
-1. Abrí [https://remix.ethereum.org](https://remix.ethereum.org)
-2. Copiá y pegá el código del contrato en un nuevo archivo `KipuBank.sol`
-3. Seleccioná la pestaña "Deploy & Run Transactions"
-4. Elegí el entorno: `Injected Provider` para testnet o `Remix VM` para pruebas locales.
-5. Ingresá el valor de `bankCap` (en wei) en el campo de despliegue.
-6. Interactuá con las funciones `deposit` y `claim`.
+1. Open [https://remix.ethereum.org](https://remix.ethereum.org)
+2. Copy and paste the contract code into a new file named `KipuBank.sol`.
+3. Select the "Deploy & Run Transactions" tab.
+4. Choose the environment:
+   - `Injected Provider` to connect MetaMask for Sepolia testnet.
+   - `Remix VM` for local testing.
+5. Enter the `bankCap` value (in wei) in the deployment field.
+6. Interact with the `deposit` and `claim` functions.
 
 ---
 
-## 📝 Licencia
+## 📝 License
 
 MIT License
 
 ---
 
-## 👨‍💻 Autor
+## 👨‍💻 Author
 
 **Diego Acosta**  
-Este contrato fue creado como ejercicio educativo.  
-No está optimizado ni auditado para producción.
+This contract was created as an educational exercise.  
+It is **not optimized or audited** for production use.
+
+---
 
 ## 🤖 Disclaimer
 
-Este `README.md` fue generado con la asistencia de inteligencia artificial (IA) para fines educativos y de documentación.  
-El contenido puede requerir revisión y validación manual para su uso en entornos reales o producción.
+This `README.md` was generated with AI assistance for educational and documentation purposes.  
+Content may require manual review before use in real or production environments.
