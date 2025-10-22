@@ -113,7 +113,7 @@ contract KipuBank {
         if (!sent)
             revert TransactionFailed();
 
-        ++numberOfWithdrawals;
+        _updateWithdrawalCount();
 
         emit Withdrawal(msg.sender, _amount);
     }
@@ -124,5 +124,9 @@ contract KipuBank {
 
     function _updateDepositCount() private {
         ++numberOfDeposits;
+    }
+
+    function _updateWithdrawalCount() private {
+        ++numberOfWithdrawals;
     }
 }
