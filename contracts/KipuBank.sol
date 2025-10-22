@@ -100,18 +100,18 @@ contract KipuBank {
     }
 
     function claim(uint256 _amount) external withdrawalWithinLimit(_amount){
+        
         if (_amount == 0) 
         revert AmountMustBeGreaterThanZero();
 
-        if (_amount > maxWithdrawalPerTx) revert WithdrawalAmountExceedsLimit();
-
-        if (_amount > balance[msg.sender]) revert InsufficientBalance();
+        uint256 userBalance = balance[msg.sender];
+        if (_amount > userBalance) revert InsufficientBalance();
         
-        balance[msg.sender] -= _amount;
+        balance[msg.sender] = userBalance - _amount;
 
         (bool sent, ) = payable(msg.sender).call{value: _amount}("");
         if (!sent)
-            revert TransactionFailed();
+        revert TransactionFailed();
 
         _updateWithdrawalCount();
 
