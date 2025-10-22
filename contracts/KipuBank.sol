@@ -116,9 +116,9 @@ contract KipuBank {
         ++numberOfWithdrawals;
 
         emit Withdrawal(msg.sender, _amount);
+    }
 
-
-
-
+    function getBankBalance() external view returns (uint256) {
+        return address(this).balance;
     }
 }
